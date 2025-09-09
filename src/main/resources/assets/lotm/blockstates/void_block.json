@@ -1,0 +1,14 @@
+{
+  "variants": {
+    "": [
+      { "model": "lotm:block/void_block/void_block_1", "weight": 1 },
+      { "model": "lotm:block/void_block/void_block_2", "weight": 1 },
+      { "model": "lotm:block/void_block/void_block_3", "weight": 1 },
+      { "model": "lotm:block/void_block/void_block_4", "weight": 2 },
+      { "model": "lotm:block/void_block/void_block_5", "weight": 2 },
+      { "model": "lotm:block/void_block/void_block_6", "weight": 2 }
+
+    ]
+
+  }
+}

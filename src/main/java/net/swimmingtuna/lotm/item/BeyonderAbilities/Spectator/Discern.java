@@ -1,0 +1,95 @@
+package net.swimmingtuna.lotm.item.BeyonderAbilities.Spectator;
+
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
+import net.swimmingtuna.lotm.init.BeyonderClassInit;
+import net.swimmingtuna.lotm.init.ItemInit;
+import net.swimmingtuna.lotm.item.BeyonderAbilities.SimpleAbilityItem;
+import net.swimmingtuna.lotm.util.BeyonderUtil;
+import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Discern extends SimpleAbilityItem {
+
+    public Discern(Properties properties) {
+        super(properties, BeyonderClassInit.SPECTATOR, 2, 0, 900);
+    }
+
+    @Override
+    public InteractionResult useAbility(Level level, LivingEntity player, InteractionHand hand) {
+        int dreamIntoReality = BeyonderUtil.getDreamIntoReality(player);
+        if (!checkAll(player, BeyonderClassInit.SPECTATOR.get(), 2, 900 / dreamIntoReality, true)) {
+            return InteractionResult.FAIL;
+        }
+        addCooldown(player);
+        useSpirituality(player, 1000 / dreamIntoReality);
+        discern(player);
+        return InteractionResult.SUCCESS;
+    }
+
+    private void discern(LivingEntity player) {
+        if (!player.level().isClientSide() && player instanceof Player pPlayer) {
+            for (Item item : BeyonderUtil.getAbilities(player)) {
+                if (item != ItemInit.DISCERN.get()) {
+                    pPlayer.getCooldowns().removeCooldown(item);
+                }
+            }
+        } else {
+            CompoundTag persistentData = player.getPersistentData();
+            List<String> cooldownKeys = new ArrayList<>();
+            for (String key : persistentData.getAllKeys()) {
+                if (key.startsWith("abilityCooldownFor")) {
+                    cooldownKeys.add(key);
+                }
+            }
+            for (String key : cooldownKeys) {
+                if (!key.equals("abilityCooldownFor" + ItemInit.DISCERN.get().getDescription().getString())) {
+                    persistentData.putInt(key, 0);
+                }
+            }
+        }
+    }
+    @Override
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        tooltipComponents.add(Component.literal("Upon use, Discern between your reality and dream self, resetting all your ability cooldowns."));
+        tooltipComponents.add(Component.literal("Spirituality Used: ").append(Component.literal("1000").withStyle(ChatFormatting.YELLOW)));
+        tooltipComponents.add(Component.literal("Cooldown: ").append(Component.literal("45 Seconds").withStyle(ChatFormatting.YELLOW)));
+        tooltipComponents.add(SimpleAbilityItem.getPathwayText(this.requiredClass.get()));
+        tooltipComponents.add(SimpleAbilityItem.getClassText(this.requiredSequence, this.requiredClass.get()));
+        super.baseHoverText(stack, level, tooltipComponents, tooltipFlag);
+    }
+    @Override
+    public @NotNull Rarity getRarity(ItemStack pStack) {
+        return Rarity.create("SPECTATOR_ABILITY", ChatFormatting.AQUA);
+    }
+
+    @Override
+    public int getPriority(LivingEntity livingEntity, LivingEntity target) {
+        int priority = 0;
+        for (Item item : BeyonderUtil.getAbilities(livingEntity)) {
+            int cooldown = BeyonderUtil.getCooldownsForAbility(livingEntity, item);
+            if (cooldown != 0) {
+                priority +=  cooldown / 20;
+            }
+            if (priority >= 100) {
+                priority = 100;
+                break;
+            }
+        }
+        return priority;
+    }
+}

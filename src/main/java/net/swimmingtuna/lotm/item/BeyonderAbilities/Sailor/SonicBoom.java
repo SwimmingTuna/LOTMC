@@ -1,0 +1,95 @@
+package net.swimmingtuna.lotm.item.BeyonderAbilities.Sailor;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import net.swimmingtuna.lotm.init.BeyonderClassInit;
+import net.swimmingtuna.lotm.init.ItemInit;
+import net.swimmingtuna.lotm.item.BeyonderAbilities.SimpleAbilityItem;
+import net.swimmingtuna.lotm.util.BeyonderUtil;
+import net.swimmingtuna.lotm.util.ExplosionUtil;
+import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nullable;
+import java.util.List;
+
+public class SonicBoom extends SimpleAbilityItem {
+
+    public SonicBoom(Properties properties) {
+        super(properties, BeyonderClassInit.SAILOR, 3, 600, 60);
+    }
+
+    @Override
+    public InteractionResult useAbility(Level level, LivingEntity player, InteractionHand hand) {
+        if (!checkAll(player)) {
+            return InteractionResult.FAIL;
+        }
+        addCooldown(player);
+        useSpirituality(player);
+        sonicBoom(player);
+        return InteractionResult.SUCCESS;
+    }
+
+    public static void sonicBoom(LivingEntity player) {
+        if (!(player.level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        int sequence = BeyonderUtil.getSequence(player);
+        Vec3 lookVec = player.getLookAngle().scale(100);
+        player.hurtMarked = true;
+        player.setDeltaMovement(lookVec.x(), lookVec.y(), lookVec.z());
+        serverLevel.playSound(null, player.getOnPos(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 30.0f, 5.0f);
+        ExplosionUtil.createNoKnockbackExplosion(player.level(), player, BeyonderUtil.getDamage(player).get(ItemInit.SONIC_BOOM.get()), false);
+        for (LivingEntity entity : player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(30 - (sequence * 5)))) {
+            if (entity == player) {
+                continue;
+            }
+            int duration = 100 - (sequence * 20);
+            int damage = (int) (BeyonderUtil.getDamage(player).get(ItemInit.SONIC_BOOM.get()) * 1.25f);
+            BeyonderUtil.applyAwe(entity, duration);
+            entity.hurt(BeyonderUtil.lightningSource(player, entity), damage);
+        }
+        RandomSource random = RandomSource.create();
+        for (int i = 0; i < 100; i++) {
+            double x = player.getX() + (random.nextDouble() * 20) - 10;
+            double y = player.getY() + (random.nextDouble() * 20) - 10;
+            double z = player.getZ() + (random.nextDouble() * 20) - 10;
+            serverLevel.sendParticles(ParticleTypes.EXPLOSION, x, y, z, 0, 0, 0, 0, 0);
+        }
+    }
+
+    @Override
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        tooltipComponents.add(Component.literal("Upon use, compresses air and releases it in order to create a sonic boom, causing an explosion that propels you in the direction you're looking. "));
+        tooltipComponents.add(Component.literal("Spirituality Used: ").append(Component.literal("600").withStyle(ChatFormatting.YELLOW)));
+        tooltipComponents.add(Component.literal("Cooldown: ").append(Component.literal("3 Seconds").withStyle(ChatFormatting.YELLOW)));
+        tooltipComponents.add(SimpleAbilityItem.getPathwayText(this.requiredClass.get()));
+        tooltipComponents.add(SimpleAbilityItem.getClassText(this.requiredSequence, this.requiredClass.get()));
+        super.baseHoverText(stack, level, tooltipComponents, tooltipFlag);
+    }
+
+    @Override
+    public Rarity getRarity(ItemStack pStack) {
+        return Rarity.create("SAILOR_ABILITY", ChatFormatting.BLUE);
+    }
+
+    @Override
+    public int getPriority(LivingEntity livingEntity, LivingEntity target) {
+        if (target != null) {
+            return 40;
+        }
+        return 0;
+    }
+}

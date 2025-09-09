@@ -1,0 +1,42 @@
+{
+  "required": true,
+  "package": "net.swimmingtuna.lotm.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "lotm.refmap.json",
+  "mixins": [
+    "ClientUpdateStructureBlockUnlimit",
+    "DollSlotMixin",
+    "EntityCollisionMixin",
+    "EntityMixin",
+    "ExplosionNoKnockback",
+    "HopperBlockEntityMixin",
+    "IELevelEntityGetterAdapter",
+    "ItemStackMixin",
+    "MixinBrewingStandMenu",
+    "MixinItems",
+    "MixinPotionItem",
+    "MixinSplashPotionItem",
+    "MobAttackMixin",
+    "ScaleOfDropCancellationMixin",
+    "ServerLevelMixin",
+    "ServerPlayerMixin",
+    "ServerPlayNetworkDesyncFixMixin",
+    "SlotMixin",
+    "StructureBlockRenderMixin",
+    "StructureBlockUnlimit"
+  ],
+  "client": [
+    "ClientLevelMixin",
+    "EntityRenderDispatcherMixin",
+    "IItemRendererMixin",
+    "ItemInHandRendererMixin",
+    "ItemRendererMixin",
+    "LevelRendererMixin",
+    "StructureBlockRenderMixin"
+  ],
+  "server": [],
+  "minVersion": "0.8",
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

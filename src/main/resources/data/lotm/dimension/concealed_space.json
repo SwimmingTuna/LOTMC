@@ -1,0 +1,14 @@
+{
+  "type": "lotm:concealed_space_type",
+  "generator": {
+    "type": "lotm:concealed_space",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "minecraft:plains"
+    },
+    "fill_block": {
+      "Name": "lotm:void_block",
+      "Properties": {}
+    }
+  }
+}
